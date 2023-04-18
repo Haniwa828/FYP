@@ -5,16 +5,11 @@ import numpy as np
 
 
 def distort(image, angle):
-    # # 画像の読み込み
-    # image = cv2.imread("images/test.jpg")
-
     # すべての辺のピクセル数を半分にする
     height, width = image.shape[:2]
     image = cv2.resize(image, (int(width), int(height)))
-    # image = cv2.resize(image, (int(width/4), int(height/4)))
-    # height, width, channels = image.shape[:3]
 
-    # 画像の左下の頂点を右に100ピクセル移動する\
+    # 圧縮率計算
     if angle == 0:
         y = 0
     else:
@@ -22,35 +17,35 @@ def distort(image, angle):
         y = 0.006967*angle + 0.012167
 
     # 圧縮するピクセル数を計算
-    translate_pixels = int(width*y)
-
-    # translate_pixels = 5000
+    compress_pixels = int(width*y)
 
     # 左下始点の反時計回り
     # [左下][左上][右上][右下]
     src_pts = np.array([[0, height], [0, 0], [width, 0], [width, height]], dtype=np.float32)
-    dst_pts = np.array([[translate_pixels, height], [0, 0], [width, 0], [width - translate_pixels, height]], dtype=np.float32)
+    dst_pts = np.array([[compress_pixels, height], [0, 0], [width, 0], [width - compress_pixels, height]], dtype=np.float32)
     M = cv2.getPerspectiveTransform(src_pts, dst_pts)
     image = cv2.warpPerspective(image, M, (width, height))
 
     return image
 
 
-def panorama(input_file, num_frames, images, angle):
+def panorama(input_file, interval, images, angle):
     # ビデオファイルを読み込み、フレーム数を取得
     cap = cv2.VideoCapture(input_file)
+    frame_rate = cap.get(cv2.CAP_PROP_FPS)  # フレームレートを取得
+    frame_interval = int(frame_rate * interval)  # 一定秒数ごとのフレームの間隔を計算
     frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-    # 一定フレーム毎に画像を切り出す
-    for i in range(num_frames):
-        # ビデオファイルからフレームを取得
-        frame_id = int(frame_count / (num_frames+1) * (i+1))
+    # 0.2秒ごとに画像を切り出す
+    for i in range(frame_count):
+        # フレームを取得
+        frame_id = int(frame_interval * (i + 1))
         cap.set(cv2.CAP_PROP_POS_FRAMES, frame_id)
         ret, frame = cap.read()
         if not ret:
             break
         
-        # 歪み修正ここ？
+        # 歪み修正
         frame = distort(frame, angle)
 
         # 画像をリストに追加
@@ -77,7 +72,7 @@ st.title('Map Generate from UAV Movie')
 st.sidebar.write('Resource and Parameta')
 
 input_file = st.sidebar.file_uploader('Upload the movie', type=['mp4'])
-num_frames = st.sidebar.slider('Frame number', min_value = 25, max_value = 100, value = 25)
+num_frames = st.sidebar.slider('Interval seconds', min_value = 0.2, max_value = 1, value = 0.5)
 angle = st.sidebar.slider('Angle', min_value = 0, max_value = 89, value = 0)
 
 
