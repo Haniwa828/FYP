@@ -72,7 +72,7 @@ st.title('Map Generate from UAV Movie')
 st.sidebar.write('Resource and Parameta')
 
 input_file = st.sidebar.file_uploader('Upload the movie', type=['mp4'])
-num_frames = st.sidebar.slider('Interval seconds', min_value = 0.2, max_value = 1, value = 0.5)
+num_frames = st.sidebar.slider('Interval seconds', min_value = 1, max_value = 100, value = 5)
 angle = st.sidebar.slider('Angle', min_value = 0, max_value = 89, value = 0)
 
 
