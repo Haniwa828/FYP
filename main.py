@@ -50,17 +50,52 @@ def panorama(input_file, interval, images, angle):
         # 画像をリストに追加
         images.append(frame)
 
-    # Stitcherを初期化し、パノラマ合成を行う
-    stitcher = cv2.Stitcher.create(mode=1)
+    # 画像を25枚ずつに分割
+    temp = [images[i:i+2] for i in range(0, len(images), 25)]
+    # 元のリストを空に
+    images.clear()
+
+    # 分割したリストをそれぞれごうせい
+    for i in temp:
+        stitcher = cv2.Stitcher.create(mode=1)
+        ret, pano = stitcher.stitch(i)
+
+        # スキャンモードでパノラマ合成した画像をimagesに追加
+        if ret == cv2.STITCHER_OK:
+            images.append(pano)
+            print("Stitch finished 1")
+
+        # 失敗した場合はパノラマモードで合成を試みる
+        else:
+            stitcher = cv2.Stitcher.create(mode=0)
+            ret, pano = stitcher.stitch(i)
+            # パノラマ合成した画像を保存
+            if ret == cv2.STITCHER_OK:
+                print("Stitch finished 2")
+                images.append(pano)
+            else:
+                print("Error during stitching")
+
+    # Stitcherを初期化し、パノラマモードでパノラマ合成を行う
+    stitcher = cv2.Stitcher.create(mode=0)
     ret, pano = stitcher.stitch(images)
 
-    # パノラマ合成した画像を保存
+    # 画像を表示
     if ret == cv2.STITCHER_OK:
         cv2.imwrite('output_image.jpg', pano)
-        # img = Image.open(pano)
         st.image('output_image.jpg', caption='Result')
+
+    # 失敗した場合はスキャンモードでパノラマ合成を試みる
     else:
-        st.write('Error during stitching')
+        stitcher = cv2.Stitcher.create(mode=1)
+        ret, pano = stitcher.stitch(images)
+
+        # 画像を表示
+        if ret == cv2.STITCHER_OK:
+            cv2.imwrite('output_image.jpg', pano)
+            st.image('output_image.jpg', caption='Result')
+        else:
+            st.write('Error during stitching')
 
 
 
