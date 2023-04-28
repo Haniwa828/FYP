@@ -5,7 +5,6 @@ import numpy as np
 
 
 def distort(image, angle):
-    # すべての辺のピクセル数を半分にする
     height, width = image.shape[:2]
     image = cv2.resize(image, (int(width), int(height)))
 
@@ -36,7 +35,7 @@ def panorama(input_file, interval, images, angle):
     frame_interval = int(frame_rate * interval)  # 一定秒数ごとのフレームの間隔を計算
     frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-    # 0.2秒ごとに画像を切り出す
+    # 0.x秒ごとに画像を切り出す
     for i in range(frame_count):
         # フレームを取得
         frame_id = int(frame_interval * (i + 1))
@@ -72,7 +71,7 @@ st.title('Map Generate from UAV Movie')
 st.sidebar.write('Resource and Parameta')
 
 input_file = st.sidebar.file_uploader('Upload the movie', type=['mp4'])
-interval = st.sidebar.slider('Interval seconds (0.x sec)', min_value = 5, max_value = 20, value = 5)/10
+interval = st.sidebar.slider('Interval seconds (0.x sec)', min_value = 1, max_value = 20, value = 5)/10
 angle = st.sidebar.slider('Angle', min_value = 0, max_value = 89, value = 0)
 
 
