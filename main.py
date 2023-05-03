@@ -21,7 +21,7 @@ def distort(image, angle):
     # 左下始点の反時計回り
     # [左下][左上][右上][右下]
     src_pts = np.array([[0, height], [0, 0], [width, 0], [width, height]], dtype=np.float32)
-    dst_pts = np.array([[compress_pixels, height], [0, 0], [width, 0], [width - compress_pixels, height]], dtype=np.float32)
+    dst_pts = np.array([[0, height], [compress_pixels, 0], [width - compress_pixels, 0], [width, height]], dtype=np.float32)
     M = cv2.getPerspectiveTransform(src_pts, dst_pts)
     image = cv2.warpPerspective(image, M, (width, height))
 
