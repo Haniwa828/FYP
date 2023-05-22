@@ -6,7 +6,7 @@ import numpy as np
 
 def distort(image, angle):
     height, width = image.shape[:2]
-    image = cv2.resize(image, (int(width), int(height)))
+    # image = cv2.resize(image, (int(width), int(height)))
 
     # 圧縮率計算
     if angle == 0:
@@ -21,9 +21,11 @@ def distort(image, angle):
     # 左下始点の反時計回り
     # [左下][左上][右上][右下]
     src_pts = np.array([[0, height], [0, 0], [width, 0], [width, height]], dtype=np.float32)
-    dst_pts = np.array([[0, height], [compress_pixels, 0], [width - compress_pixels, 0], [width, height]], dtype=np.float32)
+    dst_pts = np.array([[compress_pixels, height], [0, 0], [width, 0], [width - compress_pixels, height]], dtype=np.float32)
     M = cv2.getPerspectiveTransform(src_pts, dst_pts)
     image = cv2.warpPerspective(image, M, (width, height))
+
+    cv2.imwrite('output_image2.jpg', image)
 
     return image
 
@@ -50,31 +52,35 @@ def panorama(input_file, interval, images, angle):
         # 画像をリストに追加
         images.append(frame)
 
-    # 画像を25枚ずつに分割
-    temp = [images[i:i+2] for i in range(0, len(images), 25)]
-    # 元のリストを空に
-    images.clear()
+    while len(images) > 10:
+        print(len(images))
+        # 画像を10枚ずつに分割
+        temp = [images[i:i+2] for i in range(0, len(images), 10)]
+        # 元のリストを空に
+        images.clear()
 
-    # 分割したリストをそれぞれごうせい
-    for i in temp:
-        stitcher = cv2.Stitcher.create(mode=1)
-        ret, pano = stitcher.stitch(i)
-
-        # スキャンモードでパノラマ合成した画像をimagesに追加
-        if ret == cv2.STITCHER_OK:
-            images.append(pano)
-            print("Stitch finished 1")
-
-        # 失敗した場合はパノラマモードで合成を試みる
-        else:
-            stitcher = cv2.Stitcher.create(mode=0)
+        # 分割したリストをそれぞれ合成
+        for i in temp:
+            stitcher = cv2.Stitcher.create(mode=1)
             ret, pano = stitcher.stitch(i)
-            # パノラマ合成した画像を保存
+
+            # スキャンモードでパノラマ合成した画像をimagesに追加
             if ret == cv2.STITCHER_OK:
-                print("Stitch finished 2")
                 images.append(pano)
+                cv2.imwrite('output_image3.jpg', pano)
+                print("Stitch finished 1")
+
+            # 失敗した場合はパノラマモードで合成を試みる
             else:
-                print("Error during stitching")
+                stitcher = cv2.Stitcher.create(mode=0)
+                ret, pano = stitcher.stitch(i)
+                # パノラマ合成した画像を保存
+                if ret == cv2.STITCHER_OK:
+                    images.append(pano)
+                    cv2.imwrite('output_image3.jpg', pano)
+                    print("Stitch finished 2")
+                else:
+                    print("Error during stitching")
 
     # Stitcherを初期化し、パノラマモードでパノラマ合成を行う
     stitcher = cv2.Stitcher.create(mode=0)
@@ -84,7 +90,7 @@ def panorama(input_file, interval, images, angle):
     if ret == cv2.STITCHER_OK:
         cv2.imwrite('output_image.jpg', pano)
         st.image('output_image.jpg', caption='Result')
-
+        print("Stitch complete 1")
     # 失敗した場合はスキャンモードでパノラマ合成を試みる
     else:
         stitcher = cv2.Stitcher.create(mode=1)
@@ -94,8 +100,11 @@ def panorama(input_file, interval, images, angle):
         if ret == cv2.STITCHER_OK:
             cv2.imwrite('output_image.jpg', pano)
             st.image('output_image.jpg', caption='Result')
+            print("Stitch complete 2")
         else:
             st.write('Error during stitching')
+            st.image(images[0], caption='Result')
+            print("Error during stitching")
 
 
 
