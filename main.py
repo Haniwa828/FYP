@@ -111,7 +111,7 @@ def panorama(input_file, interval, images, angle):
 # レイアウト
 st.set_option('deprecation.showfileUploaderEncoding', False)
 
-st.title('Map Generate from UAV Movie')
+st.title('Map Generate from UAV Video')
 st.sidebar.write('Resource and Parameta')
 
 input_file = st.sidebar.file_uploader('Upload the movie', type=['mp4'])
