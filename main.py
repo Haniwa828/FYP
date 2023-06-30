@@ -52,10 +52,10 @@ def panorama(input_file, interval, images, angle):
         # 画像をリストに追加
         images.append(frame)
 
-    while len(images) > 10:
+    while len(images) > 20:
         print(len(images))
-        # 画像を10枚ずつに分割
-        temp = [images[i:i+2] for i in range(0, len(images), 10)]
+        # 画像を20枚ずつに分割
+        temp = [images[i:i+2] for i in range(0, len(images), 20)]
         # 元のリストを空に
         images.clear()
 
@@ -115,7 +115,7 @@ st.title('Map Generate from UAV Video')
 st.sidebar.write('Resource and Parameta')
 
 input_file = st.sidebar.file_uploader('Upload the movie', type=['mp4'])
-interval = st.sidebar.slider('Interval seconds (0.x sec)', min_value = 1, max_value = 20, value = 5)/10
+interval = st.sidebar.slider('Interval seconds (0.x sec)', min_value = 1, max_value = 10, value = 5)/10
 angle = st.sidebar.slider('Angle', min_value = 0, max_value = 89, value = 0)
 
 
